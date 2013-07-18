@@ -1,6 +1,4 @@
 def punct(poems):
-	#N-gram Function 
-	coca_word_count = 450000000
 	#Import
 	import csv
 	import codecs
