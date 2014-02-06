@@ -9,7 +9,7 @@ from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize, sent_tokenize, wordpunct_tokenize
 from nltk.corpus import names, wordnet
 from nltk.tag.simplify import simplify_wsj_tag
-import sys, opt
+import sys, getopt
 import re
 import itertools
 import json
@@ -543,6 +543,8 @@ def penn_to_wordnet(treebank_tag):
 
 if __name__ == "__main__":
 
+
+	print 'Deploy the powerpoetry script'
 	#Input Parameters - Required Packages, Percentiles (Dataset the user input will be compared to), Inquirer (Inquirer bag of words), COCA dictionaries)
 	try:
 		opts,args = getopt.getopt(sys.argv[1:],'r:p:i:c:k:', ['requirements=','percentiles=','inquirer=','coca=','keys='])
@@ -554,25 +556,25 @@ if __name__ == "__main__":
 			req_filename = arg
 		elif opt in ('-p','--percentiles'):
 			percentiles_filename = arg
-		elif opt in ('-i','--inquirer'):
-			inquirer_dict_filename = arg
-		elif opt in ('-c','--coca'):
-			coca_dict_filename = arg
+		# elif opt in ('-i','--inquirer'):
+		# 	inquirer_dict_filename = arg
+		# elif opt in ('-c','--coca'):
+		# 	coca_dict_filename = arg
 		elif opt in ('-k','--keys'):
-			keyname = arg
+			keypath = arg
 
 	#Load the files
 	reqs = open(req_filename).read()
 	percentiles_data = pd.read_csv(percentiles_filename)
-	with open(inquirer_dict_filename) as f:	
-		inquirer_dict = json.loads(f.read())
-	with open(coca_dict_filename) as f:	
-		coca_dict = json.loads(f.read())	
+
+	# with open(inquirer_dict_filename) as f:	
+	# 	inquirer_dict = json.loads(f.read())
+
+	# with open(coca_dict_filename) as f:	
+	# 	coca_dict = json.loads(f.read())	
 	#Keys
-	keys=[]
-	with open('%s.json'% (keyname)) as f: 
-		for line in f: keys.append(json.loads(line))
-	keys = keys[0]		
+	with open('%s'% (keypath)) as f:
+	    keys  =  f.read().strip()	
 
 
 	#Incoming request will be formatted as 
@@ -605,9 +607,12 @@ if __name__ == "__main__":
 			#Calculate Percentiles
 			#Features --> Input
 			#Percentiles_data --> Comparison
-			result = {k: sp.stats.percentileofscore(v,features[k]) for k,v in percentiles.iteritems()}
+			result = {k: int(sp.stats.percentileofscore(v,features[k])) for k,v in percentiles.iteritems()}
 			return result
 
 	#Deploy the class
 	yh = Yhat('dzorlu@gmail.com',keys,'http://cloud.yhathq.com/')
 	yh.deploy("yhat_poetry",yhat_poetry,globals())
+
+
+#python yhat_poetry.py --keys /Users/denizzorlu/Dropbox/code/yhat/keys_yhat.json --requirements /Users/denizzorlu/Dropbox/code/yhat/poetry_reqs.txt --percentiles /Users/denizzorlu/Dropbox/code/powerpoetry/data/percentiles.csv
