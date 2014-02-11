@@ -1,4 +1,4 @@
-from yhat import Yhat, YhatModel , preprocess
+
 import csv
 import pandas as pd
 import numpy as np
@@ -492,7 +492,7 @@ def penn_to_wordnet(treebank_tag):
 	else:
 	    return wordnet.NOUN
 
-def execute(data,inquirer,coca,save=True):
+def execute(data,inquirer,coca,percentiles,save=True):
 
 	#Sentiment
 	sentiment_features = sentiment(data,inquirer)
@@ -513,7 +513,7 @@ def execute(data,inquirer,coca,save=True):
 	for i,feature in features.iterrows():
 		output.append({k: int(sp.stats.percentileofscore(benchmarks[k],v)) for k,v in feature.iteritems()})
 	if save:
-		with open('output.json','w') as f: json.dumps(f.read())
+		with open('output.json','w') as f: f.write(json.dumps(output))
 		print 'file saved'
 	return output
 
@@ -524,49 +524,39 @@ if __name__ == "__main__":
 	print 'Deploy the powerpoetry script'
 	#Input Parameters - Required Packages, Percentiles (Dataset the user input will be compared to), Inquirer (Inquirer bag of words), COCA dictionaries)
 	try:
-		opts,args = getopt.getopt(sys.argv[1:],'r:p:i:c:d', ['requirements=','percentiles=','inquirer=','coca=','data='])
+		opts,args = getopt.getopt(sys.argv[1:],'p:i:c:d', ['percentiles=','inquirer=','coca=','data='])
 	except getopt.GetoptError:
 		pass
 	#Parse Arguments
 	for opt, arg in opts:
-		if opt in ('-r','--requirements'):
-			req_filename = arg
-		elif opt in ('-p','--percentiles'):
+		if opt in ('-p','--percentiles'):
 			percentiles_filename = arg
 		elif opt in ('-i','--inquirer'):
 			inquirer_dict_filename = arg
 		elif opt in ('-c','--coca'):
 			coca_dict_filename = arg
-		elif opt in ('-k','--keys'):
-			keypath = arg
 		elif opt in ('-d','--data'):
 			keypath = arg
 
 		
 
 	#Load the files
-	reqs = open(req_filename).read()
-	percentiles_data = pd.read_csv(percentiles_filename,index=False)
+	percentiles = pd.read_csv(percentiles_filename)
 	#Inquirer Dict
 	with open(inquirer_dict_filename) as f:	
 		inquirer = json.loads(f.read())
 	#COCA Dict
 	with open(coca_dict_filename) as f:	
 		coca = json.loads(f.read())
-	#Keys
-	# with open('%s'% (keypath)) as f:
-	#     keys  =  f.read().strip()	
-	# #DBParams
-	# with open('%s'% (dbpath)) as f:
-	#     dbparams  =  json.loads(f.read())
-	#Data
+	#Data - Input as Iterable. 
 	with open('%s'% (keypath)) as f:
-	    data  =  f.read()		
+	    data  =  json.loads(f.read())
 
 	#Run
-	output = execute(data,inquirer,coca)
+	output = execute(data,inquirer,coca,percentiles)
 
 
+	#python /Users/denizzorlu/Dropbox/code/powerpoetry/poetry_percentile_rank.py  --data /Users/denizzorlu/Dropbox/code/powerpoetry/data/data.json --coca /Users/denizzorlu/Dropbox/code/powerpoetry/data/coca.json --inquirer /Users/denizzorlu/Dropbox/code/powerpoetry/data/inquirer.json --percentiles /Users/denizzorlu/Dropbox/code/powerpoetry/data/percentiles.csv
 	
 
 
