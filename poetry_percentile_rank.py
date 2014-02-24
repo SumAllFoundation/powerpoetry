@@ -44,6 +44,7 @@ def ngram(poems,coca):
 	misspeltWord=np.zeros(len(poems))
 	#Unigram Frequency Count
 	unigramFreq = np.zeros(len(poems))
+	print unigramFreq
 	#Bigram
 	bigramFreq= np.zeros(len(poems))
 	#Trigram
@@ -56,8 +57,17 @@ def ngram(poems,coca):
 	#Punct Count
 	punctFreq = np.zeros(len(poems))
 
+
+		#COCA Dictionary
+
+	w1 = { tuple(re.findall('[a-zA-Z]+',item[0])) : int(item[1]) for item in coca['w1']}
+	w2 = { tuple(re.findall('[a-zA-Z]+',item[0])) : int(item[1]) for item in coca['w2']}
+	w2 = { tuple(re.findall('[a-zA-Z]+',item[0])) : int(item[1]) for item in coca['w3']}
+
+
 	#calculate the frequency distribution for n-grams. 
 	for i,sentTokenizedPoem in enumerate(sentTokenizedPoems):
+		print sentTokenizedPoem
 		#print 'Unigram: Poem ' + str(i) + ': ' 
 		#Tokenize each sentence in the poem
 		#Tokenized Text with PoS Tag - Tuple
@@ -83,20 +93,18 @@ def ngram(poems,coca):
 		#Map Penn tree to COCA for frequency analysis.
 		#Lemmatized Word + COCA PoS
 		lemmatized  = [(wnl.lemmatize(t[0],penn_to_wordnet(t[1])),penn_to_coca([1])) for t in filtered]
-		#COCA Dictionary
-		w1 = {item[0]:item[1] for item in coca['w1']}
-		w2 = {item[0]:item[1] for item in coca['w2']}
-		w3 = {item[0]:item[1] for item in coca['w3']}
+
 
 		####UNIGRAM MEASUREMENT
 		nw = 0
 		for w,wordTuple in enumerate(lemmatized):
+			print wordTuple
 			#Reset count
 			count = 0
 			try:
 				count = w1[wordTuple]
 				nw+=1
-				#print (wordTuple, ' found: ' + str(count))
+				print (wordTuple, ' found: ' + str(count))
 			except:
 			#Either the PoS convertsion from Penn is wrong. 
 			#Find the word and corresponding PoS in Dict. 
@@ -123,7 +131,11 @@ def ngram(poems,coca):
 						#print (wordTuple, ' not recognized.')
 			#Calculate Frequency if count different than zero.
 			if count > 0:
-				unigramFreq[i]=(1/(nw))*(count/coca_word_count) + ((nw-1)/(nw)) * unigramFreq[i]
+				unigramFreq[i]=(1/(nw))* count + ((nw-1)/(nw)) * unigramFreq[i]
+				print nw
+				print count
+				print unigramFreq[i]
+
 
 		#####BIGRAM FUNCTION:
 		#print 'Bigram: Poem ' + str(i) + ': ' 
@@ -138,12 +150,13 @@ def ngram(poems,coca):
 		#Number of words for the loop
 		nw = 0
 		for w,wordTuple in enumerate(filtered):
+			#print wordTuple
 			#Reset count
 			count = 0
 			try:
 				count = w2[wordTuple]
 				nw+=1
-				#print (wordTuple, ' found: ' + str(count))
+				print (wordTuple, ' found: ' + str(count))
 			except:
 				#Check if words exists in WordNet
 				if (wordnet.synsets(wordTuple[0])) and (wordnet.synsets(wordTuple[1])):
@@ -154,6 +167,7 @@ def ngram(poems,coca):
 			#Append Frequency 
 			if count > 0:
 				bigramFreq[i] = (1/(nw))* (count) + ((nw-1)/(nw)) * bigramFreq[i]
+
 		
 		######TRIGRAMS
 		#print 'Trigram: Poem ' + str(i) + ': ' 
@@ -169,13 +183,14 @@ def ngram(poems,coca):
 		#Number of words for the loop
 		nw = 0
 		for w,wordTuple in enumerate(filtered):
+			#print wordTuple
 			#Reset count
 			count = 0
 			try:
 				#print wordTuple
 				count = w3[wordTuple]
 				nw+=1
-				#print (wordTuple, ' found: ' + str(count))
+				print (wordTuple, ' found: ' + str(count))
 			except:
 				#Check if words exists in WordNet
 				if (wordnet.synsets(wordTuple[0])) and (wordnet.synsets(wordTuple[1])) and (wordnet.synsets(wordTuple[2])):
@@ -186,9 +201,11 @@ def ngram(poems,coca):
 			#Append Frequency 
 			if count > 0:
 				trigramFreq[i] = (1/(nw))* (count) + ((nw-1)/(nw)) * trigramFreq[i]
+				
 		#Log Frequnecy
 		bigramFreq[i] = np.log(bigramFreq[i])
 		trigramFreq[i] = np.log(trigramFreq[i])
+		unigramFreq[i] = np.log(unigramFreq[i])
 
 	return(unigramFreq,bigramFreq,trigramFreq,misspeltWord,
 		sentence_count,logWordCount,punctFreq)
