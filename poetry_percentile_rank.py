@@ -62,7 +62,7 @@ def ngram(poems,coca):
 
 	w1 = { tuple(re.findall('[a-zA-Z]+',item[0])) : int(item[1]) for item in coca['w1']}
 	w2 = { tuple(re.findall('[a-zA-Z]+',item[0])) : int(item[1]) for item in coca['w2']}
-	w2 = { tuple(re.findall('[a-zA-Z]+',item[0])) : int(item[1]) for item in coca['w3']}
+	w3 = { tuple(re.findall('[a-zA-Z]+',item[0])) : int(item[1]) for item in coca['w3']}
 
 
 	#calculate the frequency distribution for n-grams. 
@@ -98,13 +98,13 @@ def ngram(poems,coca):
 		####UNIGRAM MEASUREMENT
 		nw = 0
 		for w,wordTuple in enumerate(lemmatized):
-			print wordTuple
+			#print wordTuple
 			#Reset count
 			count = 0
 			try:
 				count = w1[wordTuple]
 				nw+=1
-				print (wordTuple, ' found: ' + str(count))
+				#print (wordTuple, ' found: ' + str(count))
 			except:
 			#Either the PoS convertsion from Penn is wrong. 
 			#Find the word and corresponding PoS in Dict. 
@@ -131,10 +131,7 @@ def ngram(poems,coca):
 						#print (wordTuple, ' not recognized.')
 			#Calculate Frequency if count different than zero.
 			if count > 0:
-				unigramFreq[i]=(1/(nw))* count + ((nw-1)/(nw)) * unigramFreq[i]
-				print nw
-				print count
-				print unigramFreq[i]
+				unigramFreq[i]= 1/float(nw)* count + (nw-1)/float(nw) * unigramFreq[i]
 
 
 		#####BIGRAM FUNCTION:
@@ -156,7 +153,7 @@ def ngram(poems,coca):
 			try:
 				count = w2[wordTuple]
 				nw+=1
-				print (wordTuple, ' found: ' + str(count))
+				#print (wordTuple, ' found: ' + str(count))
 			except:
 				#Check if words exists in WordNet
 				if (wordnet.synsets(wordTuple[0])) and (wordnet.synsets(wordTuple[1])):
@@ -166,7 +163,7 @@ def ngram(poems,coca):
 					#print (wordTuple, ' is infrequent')
 			#Append Frequency 
 			if count > 0:
-				bigramFreq[i] = (1/(nw))* (count) + ((nw-1)/(nw)) * bigramFreq[i]
+				bigramFreq[i] = 1/float(nw)* count + (nw-1)/float(nw) * bigramFreq[i]
 
 		
 		######TRIGRAMS
@@ -190,7 +187,7 @@ def ngram(poems,coca):
 				#print wordTuple
 				count = w3[wordTuple]
 				nw+=1
-				print (wordTuple, ' found: ' + str(count))
+				#print (wordTuple, ' found: ' + str(count))
 			except:
 				#Check if words exists in WordNet
 				if (wordnet.synsets(wordTuple[0])) and (wordnet.synsets(wordTuple[1])) and (wordnet.synsets(wordTuple[2])):
@@ -200,15 +197,16 @@ def ngram(poems,coca):
 					#print (wordTuple, ' is infrequent')
 			#Append Frequency 
 			if count > 0:
-				trigramFreq[i] = (1/(nw))* (count) + ((nw-1)/(nw)) * trigramFreq[i]
-				
+				trigramFreq[i] = 1/float(nw)* count + (nw-1)/float(nw) * trigramFreq[i]
+
 		#Log Frequnecy
+		print bigramFreq[i], trigramFreq[i],trigramFreq[i]
+
 		bigramFreq[i] = np.log(bigramFreq[i])
 		trigramFreq[i] = np.log(trigramFreq[i])
 		unigramFreq[i] = np.log(unigramFreq[i])
 
-	return(unigramFreq,bigramFreq,trigramFreq,misspeltWord,
-		sentence_count,logWordCount,punctFreq)
+	return(unigramFreq,bigramFreq,trigramFreq,misspeltWord, sentence_count,logWordCount,punctFreq)
 
 #Utilities
 #Treebank PoS to WordNet in order to lemmatize
@@ -319,7 +317,7 @@ def sound(poems):
 					phenomes.append(prondict[word.lower()][0])
 				except:
 					phenomes.append('')
-					print ('item: ', word, ' not found in CMU Dictionary')
+					#print ('item: ', word, ' not found in CMU Dictionary')
 			#Alliteration: Find the first phenome.
 			#Start from the second unit to match the consecutive ones.
 			for n, phon in enumerate(phenomes[1:]):
@@ -330,8 +328,8 @@ def sound(poems):
 				if nextfp and lastfp:
 					#First Phenome for consecutive words. Hence [0] 
 					if nextfp[0] in lastfp[0] and not re.search(r'\d+',nextfp[0]):
-						print 'Alliteration match: ', nextfp,' ', lastfp
-						alliterFreq[i] += (1/ total_words)
+						#print 'Alliteration match: ', nextfp,' ', lastfp
+						alliterFreq[i] += (1./ total_words)
 		###################################################
 		###########Perfect and Slant Rhymes################
 		##################################################
@@ -350,7 +348,7 @@ def sound(poems):
 				#The fist pronounciation.
 				plist.append(prondict[word][0])
 			except:
-				print ('item: ', word, ' not found in CMU Dictionary.')
+				#print ('item: ', word, ' not found in CMU Dictionary.')
 				plist.append([])
 		##Divide the pronounciation of last words into rolling windows of 4 .
 		window_length = 4
@@ -399,11 +397,11 @@ def sound(poems):
 							cond = (spprim[-1] == spsec[-1])
 							#Perfect Rhyme
 							if  cona and  conb and  conc:
-								perfectRhymeFreq[i] += (1/len(windows[0]))
+								perfectRhymeFreq[i] += (1./len(windows[0]))
 								#print 'Perfect:  ',vpprim, vpsec, spprim, spsec
 							#Slant Rhyme
 							if conb ^ cond:
-								slantRhymeFreq[i] += (1/len(windows[0]))
+								slantRhymeFreq[i] += (1./len(windows[0]))
 								#print 'Slant: ',vpprim, vpsec, spprim, spsec
 
 	return(perfectRhymeFreq,slantRhymeFreq,alliterFreq)
@@ -509,7 +507,20 @@ def penn_to_wordnet(treebank_tag):
 	else:
 	    return wordnet.NOUN
 
-def execute(data,inquirer,coca,percentiles,save=True):
+def percentile_subset(data):
+	x = np.arange(0,110,10)
+	#Sentiment - Descending
+	sentiment_ =  - data['PosNeg']
+	#Language Mastery - ngrams, misspeltword. All Ascending
+	language_ = data[['unigramFreq','bigramFreq','trigramFreq','misspeltWord']].mean(axis=1)
+	#Poetic - perfect, slant, alliteration. Descending
+	poetic_ =  - data[['perfectRhymeFreq','slantRhymeFreq','alliterFreq']].mean(axis=1)
+	#Save to File
+	percentile_ = pd.DataFrame([sentiment_,language_,poetic_]).T
+	percentile_.columns = ['sentiment','language','poetic']
+	return percentile_
+
+def execute(data,inquirer,coca,benchmarks,save=True):
 
 	#Sentiment
 	sentiment_features = sentiment(data,inquirer)
@@ -521,14 +532,16 @@ def execute(data,inquirer,coca,percentiles,save=True):
 	sound_features = sound(data)
 	perfectRhymeFreq,slantRhymeFreq,alliterFreq = sound_features
 	#Output - Just few features
-	features =pd.DataFrame([perfectRhymeFreq,slantRhymeFreq,Polit,Race,Relig,PosNeg,unigramFreq,bigramFreq,trigramFreq,misspeltWord, sentence_count,logWordCount,punctFreq]).transpose()
-	features.columns= ['perfectRhymeFreq','slantRhymeFreq','Polit','Race','Relig','PosNeg','unigramFreq','bigramFreq','trigramFreq','misspeltWord', 'sentence_count','wordCount','punctFreq']		
-	#Subset of Percentiles Data
-	benchmarks = percentiles[features.columns]
+	features =pd.DataFrame([perfectRhymeFreq,slantRhymeFreq, alliterFreq, Polit,Race,Relig,PosNeg,unigramFreq,bigramFreq,trigramFreq,misspeltWord, sentence_count,logWordCount,punctFreq]).transpose()
+	features.columns= ['perfectRhymeFreq','slantRhymeFreq','alliterFreq','Polit','Race','Relig','PosNeg','unigramFreq','bigramFreq','trigramFreq','misspeltWord', 'sentence_count','wordCount','punctFreq']		
+
+
 	#Calculate Percentiles
+	print features
+	percentile_input = percentile_subset(features)
 	output =[]
-	for i,feature in features.iterrows():
-		output.append({k: int(sp.stats.percentileofscore(benchmarks[k],v)) for k,v in feature.iteritems()})
+	for i,percentile_ in percentile_input.iterrows():
+		output.append({k: int(sp.stats.percentileofscore(benchmarks[k],v)) for k,v in percentile_.iteritems()})
 	if save:
 		with open('output.json','w') as f: f.write(json.dumps(output))
 		print 'file saved'
@@ -538,7 +551,6 @@ def execute(data,inquirer,coca,percentiles,save=True):
 if __name__ == "__main__":
 
 
-	print 'Deploy the powerpoetry script'
 	#Input Parameters - Required Packages, Percentiles (Dataset the user input will be compared to), Inquirer (Inquirer bag of words), COCA dictionaries)
 	try:
 		opts,args = getopt.getopt(sys.argv[1:],'p:i:c:d', ['percentiles=','inquirer=','coca=','data='])
@@ -572,8 +584,8 @@ if __name__ == "__main__":
 	#Run
 	output = execute(data,inquirer,coca,percentiles)
 
+# $ python /Users/denizzorlu/Dropbox/code/powerpoetry/poetry_percentile_rank.py  --data /Users/denizzorlu/Dropbox/code/powerpoetry/data/twitter_test_data.json --coca /Users/denizzorlu/Dropbox/code/powerpoetry/data/coca.json --inquirer /Users/denizzorlu/Dropbox/code/powerpoetry/data/inquirer.json --percentiles /Users/denizzorlu/Dropbox/code/powerpoetry/data/twitter_percentiles.csv
 
-	#python /Users/denizzorlu/Dropbox/code/powerpoetry/poetry_percentile_rank.py  --data /Users/denizzorlu/Dropbox/code/powerpoetry/data/data.json --coca /Users/denizzorlu/Dropbox/code/powerpoetry/data/coca.json --inquirer /Users/denizzorlu/Dropbox/code/powerpoetry/data/inquirer.json --percentiles /Users/denizzorlu/Dropbox/code/powerpoetry/data/percentiles.csv
 	
 
 
